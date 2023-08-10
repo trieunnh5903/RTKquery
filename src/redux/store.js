@@ -1,12 +1,12 @@
-import { configureStore } from "@reduxjs/toolkit";
-import postSlice from "./slice";
-import { setupListeners } from "@reduxjs/toolkit/query";
-import { subjectApi } from "./api";
+import {configureStore} from '@reduxjs/toolkit';
+import {setupListeners} from '@reduxjs/toolkit/query';
+import {subjectApi} from './api';
 export const store = configureStore({
-    reducer: {
-        [subjectApi.reducerPath]: subjectApi.reducer
-    },
-    middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(subjectApi.middleware)
-})
+  reducer: {
+    [subjectApi.reducerPath]: subjectApi.reducer,
+  },
+  middleware: getDefaultMiddleware =>
+    getDefaultMiddleware().concat(subjectApi.middleware),
+});
 
-setupListeners(store.dispatch)
+setupListeners(store.dispatch);

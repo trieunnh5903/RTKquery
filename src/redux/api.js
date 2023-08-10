@@ -7,11 +7,15 @@ export const subjectApi = createApi({
   endpoints: builder => ({
     getAllSubjects: builder.query({
       query: () => '/subjects',
-      providesTags: ['Subject'],
+      providesTags: (result = [], error, arg) => {
+        result = result.subjects;
+        return ['Subject', ...result.map(({id}) => ({type: 'Subject', id}))];
+      },
     }),
 
     getSubjectById: builder.query({
       query: id => `/subjects/${id}`,
+      providesTags: (result, error, arg) => [{type: 'Subject', id: arg}],
     }),
 
     deleteSubject: builder.mutation({
@@ -37,18 +41,25 @@ export const subjectApi = createApi({
       invalidatesTags: ['Subject'],
     }),
 
-    // editSubject: builder.mutation({
-    //     query: subject => ({
-    //         url: `/subject/${subject.id}`,
-    //         method: 'PUT',
-    //         body: subject
-    //     })
-    // })
+    editSubject: builder.mutation({
+      query: subject => ({
+        url: `/subject/${subject.id}`,
+        method: 'PUT',
+        body: subject,
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+        },
+      }),
+      invalidatesTags: (result, error, arg) => {
+        console.log(arg);
+        return [{type: 'Subject', id: arg.id}];
+      },
+    }),
   }),
 });
 
 export const {
-  // useEditSubjectMutation,
+  useEditSubjectMutation,
   useGetAllSubjectsQuery,
   useGetSubjectByIdQuery,
   useDeleteSubjectMutation,

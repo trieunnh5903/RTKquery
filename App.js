@@ -3,6 +3,7 @@
 /* eslint-disable no-undef */
 import {
   ActivityIndicator,
+  Keyboard,
   StyleSheet,
   Text,
   TextInput,
@@ -14,6 +15,7 @@ import { Provider } from 'react-redux';
 import {
   useAddNewSubjectMutation,
   useDeleteSubjectMutation,
+  useEditSubjectMutation,
   useGetAllSubjectsQuery,
 } from './src/redux/api';
 import { store } from './src/redux/store';
@@ -40,10 +42,17 @@ const AppComponent = () => {
   const [name, setName] = useState('');
   const [addNewSubject] = useAddNewSubjectMutation();
   const [deleteSubject] = useDeleteSubjectMutation();
-
+  const [editSubject] = useEditSubjectMutation();
+  const [isEditing, setIsEditing] = useState(false);
   // handle delete subject mutation
   const onDeletePress = (subjectId) => {
     deleteSubject(subjectId);
+  };
+
+  const onEditPress = (subject) => {
+    setId(subject.id);
+    setName(subject.name);
+    setIsEditing(true);
   };
 
   // render the subject
@@ -56,12 +65,12 @@ const AppComponent = () => {
         key={subject.id}
         style={{ padding: 8, flexDirection: 'row', alignItems: 'center' }}>
         <Text style={{ flex: 1, color: 'black', padding: 8 }}>
-          {subject.name}
+          ID: {subject.id} - Name:{subject.name}
         </Text>
         <TouchableOpacity onPress={() => onDeletePress(subject.id)} style={{ backgroundColor: 'red' }}>
           <Text style={{ color: 'white', padding: 8 }}>DELETE</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={{ backgroundColor: 'cyan' }}>
+        <TouchableOpacity onPress={() => onEditPress(subject)} style={{ backgroundColor: 'cyan' }}>
           <Text style={{ padding: 8 }}>EDIT</Text>
         </TouchableOpacity>
       </View>
@@ -72,7 +81,7 @@ const AppComponent = () => {
 
   //handle click add button
   const onSubmtPress = async () => {
-    if (id && name) {
+    if (id && name && !isEditing) {
       try {
         await addNewSubject({ id, name }).unwrap();
         setId('');
@@ -82,8 +91,16 @@ const AppComponent = () => {
         console.log(e.message);
       }
     } else {
-      console.log('emty');
+      try {
+        await editSubject({ id, name }).unwrap();
+        setId('');
+        setName('');
+        setIsEditing(false);
+      } catch (e) {
+        console.log(e);
+      }
     }
+    Keyboard.dismiss();
   };
   return (
     <View style={{ padding: 24 }}>
