@@ -1,5 +1,12 @@
+import {createSelector} from '@reduxjs/toolkit';
 import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react';
 
+/*
+auto refresh cache: thay đổi dựa theo tag
+tagTypes: tên tag gốc
+providesTags: tên tag gốc, có thể thêm id để refresh theo id
+invalidTags: tag sẽ được refresh khi mutations chạy;
+*/
 export const subjectApi = createApi({
   reducerPath: 'subjectApi',
   baseQuery: fetchBaseQuery({baseUrl: '/api'}),
@@ -11,6 +18,8 @@ export const subjectApi = createApi({
         result = result.subjects;
         return ['Subject', ...result.map(({id}) => ({type: 'Subject', id}))];
       },
+      // thời gian dữ liệu lưu trong cache nếu không có subciptions nào, đơn vị là miliseconds default 60s
+      keepUnusedDataFor: 60 * 1000,
     }),
 
     getSubjectById: builder.query({
@@ -23,16 +32,14 @@ export const subjectApi = createApi({
         url: `/subjects/${id}`,
         method: 'DELETE',
         credentials: 'include',
-        // Include the entire post object as the body of the request
       }),
-      invalidatesTags: ['Subject'],
+      invalidatesTags: (result, error, arg) => [{type: 'Subject', id: arg}],
     }),
 
     addNewSubject: builder.mutation({
       query: initialPost => ({
         url: '/subjects',
         method: 'POST',
-        // Include the entire post object as the body of the request
         body: initialPost,
         headers: {
           'Content-Type': 'application/json; charset=utf-8',
@@ -65,3 +72,10 @@ export const {
   useDeleteSubjectMutation,
   useAddNewSubjectMutation,
 } = subjectApi;
+
+const selectAllSubjectResult = subjectApi.endpoints.getAllSubjects.select();
+
+export const selectAllSubjects = createSelector(
+  selectAllSubjectResult,
+  usersResult => usersResult?.data ?? [],
+);

@@ -1,3 +1,4 @@
+import {nanoid} from '@reduxjs/toolkit';
 import {Model, createServer} from 'miragejs';
 
 export const setUpServer = () => {
@@ -7,9 +8,10 @@ export const setUpServer = () => {
     },
 
     seeds(server) {
-      server.create('subject', {id: '1', name: 'HTML'});
-      server.create('subject', {id: '2', name: 'JS'});
-      server.create('subject', {id: '3', name: 'TS'});
+      server.create('subject', {id: nanoid(), name: 'HTML'});
+      server.create('subject', {id: nanoid(), name: 'JS'});
+      server.create('subject', {id: nanoid(), name: 'CSS'});
+      server.create('subject', {id: nanoid(), name: 'NodeJS'});
     },
 
     routes() {
@@ -24,7 +26,7 @@ export const setUpServer = () => {
 
       this.post('/api/subjects', (schema, request) => {
         let attrs = JSON.parse(request.requestBody);
-        return schema.subjects.create(attrs);
+        return schema.subjects.create({...attrs, id: nanoid()});
       });
 
       this.delete('/api/subjects/:id', (schema, request) => {
