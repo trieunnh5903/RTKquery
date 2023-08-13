@@ -5,8 +5,6 @@ import {
   createSlice,
 } from '@reduxjs/toolkit';
 // lấy toàn bộ danh sách
-//arg: đối số truyền vào
-//thunk
 export const fetchSubjectRequest = createAsyncThunk(
   'subject/fetchSubjectRequest',
   async (arg, thunkAPI) => {
@@ -115,6 +113,7 @@ export default subjectSlice.reducer;
 export const selectSubjectStatus = state => state.subject.status;
 export const selectSubjectError = state => state.subject.error;
 export const {updateSubject, deleteSubject} = subjectSlice.actions;
+
 //sử dụng create seletor để tạo các selecter có thể ghi nhớ, logic sẽ không
 // thực hiện lại trừ khi output trả ra từ input truyền vào thay đổi
 // export const selectAllSubjects = createSelector(
