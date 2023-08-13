@@ -3,7 +3,7 @@
 import React from 'react';
 import { Provider } from 'react-redux';
 import { store } from './src/redux/store';
-import { setUpServer } from './src/redux/fakeApi/mock_api';
+import { setUpServer } from './src/fakeServer/mock_api';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Screen1 from './src/screens/Screen1';

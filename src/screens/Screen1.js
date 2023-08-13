@@ -11,14 +11,16 @@ import {
 } from 'react-native';
 import React, { useState } from 'react';
 import {
+    selectAllSubjects,
     useAddNewSubjectMutation,
     useDeleteSubjectMutation,
     useEditSubjectMutation,
     useGetAllSubjectsQuery,
 } from '../redux/api';
+import { useSelector } from 'react-redux';
 
 const Screen1 = ({ navigation }) => {
-    const { data, isFetching, isSuccess, isError, error } =
+    const { isFetching, isSuccess, isError, error } =
         useGetAllSubjectsQuery();
     const [id, setId] = useState(null);
     const [name, setName] = useState('');
@@ -26,6 +28,8 @@ const Screen1 = ({ navigation }) => {
     const [deleteSubject] = useDeleteSubjectMutation();
     const [editSubject] = useEditSubjectMutation();
     const [isEditing, setIsEditing] = useState(false);
+    //sử dụng createSelector lấy dữ liệu đã sort
+    const sortedSubjects = useSelector(state => selectAllSubjects(state));
     // handle delete subject mutation
     const onDeletePress = (subjectId) => {
         deleteSubject(subjectId);
@@ -42,12 +46,12 @@ const Screen1 = ({ navigation }) => {
     if (isFetching) {
         content = <ActivityIndicator size={'small'} />;
     } else if (isSuccess) {
-        content = data.subjects.map(subject => (
+        content = sortedSubjects.map(subject => (
             <View
                 key={subject.id}
                 style={{ padding: 8, flexDirection: 'row', alignItems: 'center' }}>
                 <Text style={{ flex: 1, color: 'black', padding: 8 }}>
-                    ID: {subject.id} - Name:{subject.name}
+                    {subject.name}
                 </Text>
                 <TouchableOpacity onPress={() => onDeletePress(subject.id)} style={{ backgroundColor: 'red' }}>
                     <Text style={{ color: 'white', padding: 8 }}>DELETE</Text>
@@ -63,10 +67,9 @@ const Screen1 = ({ navigation }) => {
 
     //handle click add button
     const onSubmtPress = async () => {
-        if (id && name && !isEditing) {
+        if (name && !isEditing) {
             try {
-                await addNewSubject({ id, name }).unwrap();
-                setId('');
+                await addNewSubject({ name }).unwrap();
                 setName('');
                 console.log('addNewSubject success');
             } catch (e) {
@@ -86,12 +89,6 @@ const Screen1 = ({ navigation }) => {
     };
     return (
         <View style={{ padding: 24 }}>
-            <Text>ID:</Text>
-            <TextInput
-                value={id}
-                onChangeText={setId}
-                style={{ borderWidth: 1, borderRadius: 10 }}
-            />
             <Text>Name:</Text>
             <TextInput
                 value={name}

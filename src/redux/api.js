@@ -31,7 +31,6 @@ export const subjectApi = createApi({
       query: id => ({
         url: `/subjects/${id}`,
         method: 'DELETE',
-        credentials: 'include',
       }),
       invalidatesTags: (result, error, arg) => [{type: 'Subject', id: arg}],
     }),
@@ -72,10 +71,15 @@ export const {
   useDeleteSubjectMutation,
   useAddNewSubjectMutation,
 } = subjectApi;
-
 const selectAllSubjectResult = subjectApi.endpoints.getAllSubjects.select();
 
 export const selectAllSubjects = createSelector(
   selectAllSubjectResult,
-  usersResult => usersResult?.data ?? [],
+  usersResult => {
+    const sortData = usersResult?.data?.subjects ?? [];
+    // Sort subject in descending chronological order
+    const sortedSubjects = sortData.slice();
+    sortedSubjects.sort((a, b) => a.name.localeCompare(b.name));
+    return sortedSubjects;
+  },
 );
