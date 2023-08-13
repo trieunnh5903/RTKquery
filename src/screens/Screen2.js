@@ -11,16 +11,20 @@ import React, {useEffect, useState} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 import {
   addNewSubject,
+  deleteSubject,
   fetchSubjectRequest,
   selectAllSubjects,
   selectSubjectError,
   selectSubjectStatus,
+  updateSubject,
 } from '../redux/slice';
 
 const Screen2 = () => {
   const dispatch = useDispatch();
+  const [isEditing, setIsEditing] = useState(false);
   const subjects = useSelector(selectAllSubjects);
   const [name, setName] = useState('');
+  const [id, setId] = useState('');
   const subjectStatus = useSelector(selectSubjectStatus);
   const error = useSelector(selectSubjectError);
   //su dụng trạng thái để fetch chỉ 1 lần
@@ -30,6 +34,15 @@ const Screen2 = () => {
     }
   }, [dispatch, subjectStatus]);
 
+  const onEditPress = subject => {
+    setName(subject.name);
+    setId(subject.id);
+    setIsEditing(true);
+  };
+
+  const onDeletePress = idSubject => {
+    dispatch(deleteSubject(idSubject));
+  };
   let content;
 
   if (subjectStatus === 'loading') {
@@ -43,12 +56,12 @@ const Screen2 = () => {
           {subject.name}
         </Text>
         <TouchableOpacity
-          // onPress={() => onDeletePress(subject.id)}
+          onPress={() => onDeletePress(subject.id)}
           style={{backgroundColor: 'red'}}>
           <Text style={{color: 'white', padding: 8}}>DELETE</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          // onPress={() => onEditPress(subject)}
+          onPress={() => onEditPress(subject)}
           style={{backgroundColor: 'cyan'}}>
           <Text style={{padding: 8}}>EDIT</Text>
         </TouchableOpacity>
@@ -60,10 +73,15 @@ const Screen2 = () => {
 
   const onSubmitPress = async () => {
     try {
-      if (name) {
-        Keyboard.dismiss();
+      Keyboard.dismiss();
+      if (name && !isEditing) {
         await dispatch(addNewSubject({name})).unwrap();
         setName('');
+      } else if (isEditing && name) {
+        dispatch(updateSubject({name, id}));
+        setName('');
+        setId('');
+        setIsEditing(false);
       }
     } catch (e) {
       console.error('Failed to save the post: ', e);

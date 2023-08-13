@@ -1,9 +1,12 @@
 import {
   createAsyncThunk,
+  createEntityAdapter,
   createSelector,
   createSlice,
-  isRejectedWithValue,
 } from '@reduxjs/toolkit';
+// lấy toàn bộ danh sách
+//arg: đối số truyền vào
+//thunk
 export const fetchSubjectRequest = createAsyncThunk(
   'subject/fetchSubjectRequest',
   async (arg, thunkAPI) => {
@@ -16,14 +19,15 @@ export const fetchSubjectRequest = createAsyncThunk(
       return data.subjects;
     } catch (error) {
       console.log(error);
-      return isRejectedWithValue(error.response.data);
+      return thunkAPI.rejectWithValue(error.response.data);
     }
   },
 );
 
+//thêm một môn học
 export const addNewSubject = createAsyncThunk(
   'subject/addNewSubject',
-  async arg => {
+  async (arg, {rejectWithValue}) => {
     try {
       const response = await fetch('/api/subjects', {
         method: 'POST',
@@ -38,19 +42,47 @@ export const addNewSubject = createAsyncThunk(
       const data = await response.json();
       return data.subject;
     } catch (error) {
-      return isRejectedWithValue(error.response.data);
+      return rejectWithValue(error.response.data);
     }
   },
 );
 
+//EntityAdapter
+const subjectAdapter = createEntityAdapter({
+  sortComparer: (a, b) => a.name.localeCompare(b.name),
+});
+
+const initialState = subjectAdapter.getInitialState({
+  status: 'idle',
+  error: null,
+});
+//
+
 const subjectSlice = createSlice({
   name: 'subject',
-  initialState: {
-    subjects: [],
-    status: 'idle',
-    error: null,
-  },
+  // initialState: {
+  //   subjects: [],
+  //   status: 'idle',
+  //   error: null,
+  // },
+  initialState,
+  reducers: {
+    updateSubject: (state, action) => {
+      const {id, name} = action.payload;
+      const exsitingSubject = state.entities[id];
+      if (exsitingSubject) {
+        exsitingSubject.name = name;
+      }
+    },
 
+    deleteSubject: (state, action) => {
+      const id = action.payload;
+      const exsitingSubject = state.entities[id];
+      if (exsitingSubject) {
+        subjectAdapter.removeOne(state, id);
+      }
+    },
+  },
   extraReducers: builder => {
     builder
       .addCase(fetchSubjectRequest.pending, (state, action) => {
@@ -58,7 +90,9 @@ const subjectSlice = createSlice({
       })
       .addCase(fetchSubjectRequest.fulfilled, (state, actions) => {
         state.status = 'fulfilled';
-        state.subjects = [...actions.payload];
+        subjectAdapter.upsertMany(state, actions.payload);
+        console.log(actions.payload);
+        // state.subjects = [...actions.payload];
       })
       .addCase(fetchSubjectRequest.rejected, (state, action) => {
         state.status = 'rejected';
@@ -72,13 +106,18 @@ const subjectSlice = createSlice({
   },
 });
 
+export const {
+  selectAll: selectAllSubjects,
+  selectById: selectSubjectById,
+  selectIds: selectSubjectIds,
+} = subjectAdapter.getSelectors(state => state.subject);
 export default subjectSlice.reducer;
 export const selectSubjectStatus = state => state.subject.status;
 export const selectSubjectError = state => state.subject.error;
-
+export const {updateSubject, deleteSubject} = subjectSlice.actions;
 //sử dụng create seletor để tạo các selecter có thể ghi nhớ, logic sẽ không
 // thực hiện lại trừ khi output trả ra từ input truyền vào thay đổi
-export const selectAllSubjects = createSelector(
-  state => state.subject.subjects,
-  subjects => subjects.slice().sort((a, b) => a.name.localeCompare(b.name)),
-);
+// export const selectAllSubjects = createSelector(
+//   state => state.subject.subjects,
+//   subjects => subjects.slice().sort((a, b) => a.name.localeCompare(b.name)),
+// );
