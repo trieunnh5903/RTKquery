@@ -4,7 +4,7 @@ import {
   createSelector,
   createSlice,
 } from '@reduxjs/toolkit';
-// lấy toàn bộ danh sách
+//call api lấy toàn bộ danh sách
 export const fetchSubjectRequest = createAsyncThunk(
   'subject/fetchSubjectRequest',
   async (arg, thunkAPI) => {
@@ -22,7 +22,7 @@ export const fetchSubjectRequest = createAsyncThunk(
   },
 );
 
-//thêm một môn học
+//call api thêm một môn học
 export const addNewSubject = createAsyncThunk(
   'subject/addNewSubject',
   async (arg, {rejectWithValue}) => {
@@ -58,11 +58,6 @@ const initialState = subjectAdapter.getInitialState({
 
 const subjectSlice = createSlice({
   name: 'subject',
-  // initialState: {
-  //   subjects: [],
-  //   status: 'idle',
-  //   error: null,
-  // },
   initialState,
   reducers: {
     updateSubject: (state, action) => {
@@ -90,7 +85,6 @@ const subjectSlice = createSlice({
         state.status = 'fulfilled';
         subjectAdapter.upsertMany(state, actions.payload);
         console.log(actions.payload);
-        // state.subjects = [...actions.payload];
       })
       .addCase(fetchSubjectRequest.rejected, (state, action) => {
         state.status = 'rejected';
@@ -98,7 +92,6 @@ const subjectSlice = createSlice({
       });
 
     builder.addCase(addNewSubject.fulfilled, (state, action) => {
-      // We can directly add the new post object to our posts array
       state.subjects.push(action.payload);
     });
   },

@@ -103,7 +103,7 @@ const Screen1 = ({ navigation }) => {
             </Text>
             {content}
             <TouchableOpacity onPress={() => navigation.navigate('Screen2')} style={styles.btnSubmit}>
-                <Text style={{ color: 'white' }}>Check cache list product</Text>
+                <Text style={{ color: 'white' }}>Go to screen 2</Text>
             </TouchableOpacity>
         </View>
     );
